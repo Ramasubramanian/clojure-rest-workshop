@@ -1,0 +1,39 @@
+version: '3.3'
+services:
+  postgres:
+    image: postgres:13.2
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      -
+        type: bind
+        source: D:/pgdata
+        target: /var/lib/postgresql/data
+    networks:
+      - reference
+  clojureapp:
+    image: clojure:lein
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      -
+        type: bind
+        source: D:/clojure_app
+        target: /app
+      -
+        type: bind
+        source: D:/m2
+        target: /root/.m2        
+    networks:
+      - reference      
+networks:
+  reference:
