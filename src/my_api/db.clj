@@ -1,6 +1,7 @@
 (ns my_api.db
   (:require [toucan.db :as toucandb]
-            [toucan.models :as models]))
+            [toucan.models :as models])
+  (:import java.sql.Timestamp))
 
 (toucandb/set-default-db-connection!
  {:classname   "org.postgresql.Driver"
@@ -9,17 +10,24 @@
   :user        "user"
   :password    "password"})
 
+(defn- now [] (Timestamp. (System/currentTimeMillis)))
+
+(defn add-timestamp-columns [lead]
+  (assoc lead :created_at (now), :updated_at (now)))
+
 ;; define the Lead model
-(models/defmodel LeadData :lead
+(models/defmodel Lead :lead
   models/IModel
-  (primary-key [_] :lead_id))
+  (primary-key [_] :lead_id)
+  (pre-insert [this]
+              (add-timestamp-columns this)))
 
 (defn create-lead [lead]
   (->>
-   (toucandb/insert! LeadData lead)
+   (toucandb/insert! Lead lead)
    (:lead_id)))
 
 (defn get-lead [id]
-  (try (LeadData id)
+  (try (Lead id)
        (catch Exception e
-              (.printStackTrace e))))
+         (.printStackTrace e))))
